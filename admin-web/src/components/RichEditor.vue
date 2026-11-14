@@ -64,8 +64,9 @@ const editorConfig: Partial<IEditorConfig> = {
       }
     },
     // 粘贴网页内容时只保留基础排版，避免带入外部样式与脚本
-    pasteFilterStyle: true,
-    pasteIgnoreImg: false,
+    // wangEditor 类型定义声明为对象，实际支持布尔开关
+    pasteFilterStyle: true as any,
+    pasteIgnoreImg: false as any,
     pasteTextHandle: (content: string) => content
   }
 }

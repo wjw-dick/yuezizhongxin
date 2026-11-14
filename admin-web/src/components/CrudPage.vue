@@ -333,6 +333,26 @@ const statusColors: Record<string, string> = {
   维修中: 'danger'
 }
 
+/**
+ * 状态枚举的中文兜底：不少实体直接存英文枚举（ENABLED / ON_SHELF …），
+ * 列未显式配置 options 时也应显示中文，避免列表里出现裸英文。
+ */
+const STATUS_TEXT: Record<string, string> = {
+  ENABLED: '启用',
+  DISABLED: '停用',
+  ON_SHELF: '上架',
+  OFF_SHELF: '下架',
+  AVAILABLE: '可预订',
+  LOCKED: '已锁定',
+  OCCUPIED: '已入住',
+  CLEANING: '待清洁',
+  MAINTENANCE: '维修中',
+  PENDING: '待处理',
+  PROCESSING: '处理中',
+  FINISHED: '已完成',
+  CANCELED: '已取消'
+}
+
 function display(value: any, col: Column) {
   if (col.format) {
     return col.format({ [col.prop]: value })
@@ -342,6 +362,9 @@ function display(value: any, col: Column) {
   }
   if (col.type === 'status' && col.options?.length) {
     return col.options.find((o) => o.value === value)?.label || value
+  }
+  if (col.type === 'status' && typeof value === 'string' && STATUS_TEXT[value]) {
+    return STATUS_TEXT[value]
   }
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
     return value.slice(0, 16).replace('T', ' ')

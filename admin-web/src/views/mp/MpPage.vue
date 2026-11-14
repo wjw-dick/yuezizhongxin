@@ -757,6 +757,22 @@ function addChild(index: number) {
   top.children.push({ name: '', type: 'view', value: '' })
 }
 
+/** 删除一级菜单（含其下全部子菜单，需二次确认） */
+async function removeTop(index: number) {
+  const top = menuTree.value[index]
+  const childCount = top.children?.length || 0
+  try {
+    await ElMessageBox.confirm(
+      childCount ? `该菜单下还有 ${childCount} 个子菜单，删除后一并移除，确认？` : '确认删除该一级菜单？',
+      '删除菜单',
+      { type: 'warning' }
+    )
+  } catch {
+    return
+  }
+  menuTree.value.splice(index, 1)
+}
+
 async function saveMenu() {
   if (!menuTree.value.length) {
     ElMessage.warning('至少配置一个一级菜单')

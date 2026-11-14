@@ -205,8 +205,12 @@ async function load() {
   ])
   today.value = wb?.data?.today || {}
   reminders.value = wb?.data?.reminders || []
-  const daily = monthly?.data?.dailyTrend || []
-  trend.value = daily.slice(-14)
+  const daily: any[] = monthly?.data?.dailyTrend || []
+  // 月报返回整月趋势，工作台只看「截至今天」的最近 14 天，避免把未来日期画成空柱
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const todayText = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+  trend.value = daily.filter((d) => String(d.date) <= todayText).slice(-14)
   channels.value = monthly?.data?.channelMix || []
 }
 

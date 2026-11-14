@@ -84,15 +84,38 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Icon from '../components/Icon.vue'
-import { TENANT_KEY, TOKEN_KEY, USER_KEY, PLATFORM_TOKEN_KEY } from '../api/http'
+import tenantHttp, { TENANT_KEY, TOKEN_KEY, USER_KEY, PLATFORM_TOKEN_KEY } from '../api/http'
 
 const route = useRoute()
 const router = useRouter()
 
-const menuGroups = [
+/** 左侧导航待办徽标：按路由前缀累计工作台提醒数量 */
+type MenuItem = { path: string; title: string; icon: string; badge?: () => number }
+type MenuGroup = { label: string; items: MenuItem[] }
+
+const badgeCounts = ref<Record<string, number>>({})
+
+/** 拉取工作台提醒，按 link 的路由前缀归并到导航徽标 */
+async function loadBadges() {
+  try {
+    const res: any = await tenantHttp.get('/api/tenant/reports/workbench')
+    const reminders: any[] = res?.data?.reminders || []
+    const next: Record<string, number> = {}
+    reminders.forEach((r) => {
+      const path = String(r.link || '').split('?')[0]
+      if (!path || !r.count) return
+      next[path] = (next[path] || 0) + Number(r.count)
+    })
+    badgeCounts.value = next
+  } catch {
+    badgeCounts.value = {}
+  }
+}
+
+const menuGroups: MenuGroup[] = [
   {
     label: '概览',
     items: [{ path: '/dashboard', title: '工作台', icon: 'dashboard' }]
@@ -108,15 +131,15 @@ const menuGroups = [
   {
     label: '客户与订单',
     items: [
-      { path: '/crm', title: '线索与跟进', icon: 'users' },
-      { path: '/orders', title: '订单与收款', icon: 'receipt' },
-      { path: '/stay', title: '入馆与出馆', icon: 'key' }
+      { path: '/crm', title: '线索与跟进', icon: 'users', badge: () => badgeCounts.value['/crm'] || 0 },
+      { path: '/orders', title: '订单与收款', icon: 'receipt', badge: () => badgeCounts.value['/orders'] || 0 },
+      { path: '/stay', title: '入馆与出馆', icon: 'key', badge: () => badgeCounts.value['/stay'] || 0 }
     ]
   },
   {
     label: '护理与服务',
     items: [
-      { path: '/care', title: '护理管理', icon: 'shield' },
+      { path: '/care', title: '护理管理', icon: 'shield', badge: () => badgeCounts.value['/care'] || 0 },
       { path: '/rehab', title: '产后康复', icon: 'sparkle' },
       { path: '/meals', title: '月子餐', icon: 'meal' },
       { path: '/staff', title: '人力与排班', icon: 'clock' }
@@ -185,6 +208,10 @@ const logout = () => {
   localStorage.removeItem(PLATFORM_TOKEN_KEY)
   router.push('/login')
 }
+
+onMounted(loadBadges)
+// 处理完一条待办回到工作台时，徽标应随之减少
+watch(() => route.path, () => loadBadges())
 </script>
 
 <style scoped>

@@ -59,3 +59,6 @@ desktop.ini
 tmp/
 *.tmp
 *.bak
+
+# 运行时逐页截图（本地核对产物，不入库）
+shots/run/

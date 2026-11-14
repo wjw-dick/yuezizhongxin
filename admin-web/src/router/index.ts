@@ -1,7 +1,7 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
 import { PLATFORM_TOKEN_KEY, TOKEN_KEY } from '../api/client'
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   { path: '/login', name: 'login', component: () => import('../views/Login.vue'), meta: { public: true } },
   {
     path: '/platform',

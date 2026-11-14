@@ -5,10 +5,14 @@ import axios from 'axios'
  * 租户通过 X-Tenant-Code 传递（部署时由 nginx 按子域名注入，也可用 ?tenant= 兜底）。
  */
 const params = new URLSearchParams(location.search)
-const tenant =
-  params.get('tenant') ||
-  localStorage.getItem('yzz.tenantCode') ||
-  (location.hostname.split('.').length > 2 ? location.hostname.split('.')[0] : 'demo')
+const hostname = location.hostname
+// 本机 IP / localhost 不能按子域名解析（127.0.0.1 会被误切成 "127"）
+const isLocal = /^\d{1,3}(\.\d{1,3}){3}$/.test(hostname) || hostname === 'localhost'
+const fromHost = !isLocal && hostname.split('.').length > 2 ? hostname.split('.')[0] : ''
+const candidate =
+  params.get('tenant') || localStorage.getItem('yzz.tenantCode') || fromHost || 'demo'
+// 租户码只允许字母数字与短横线，过滤掉历史误存的纯数字
+const tenant = /^[a-z][a-z0-9-]{1,31}$/i.test(candidate) && !/^\d+$/.test(candidate) ? candidate : 'demo'
 
 if (tenant) {
   localStorage.setItem('yzz.tenantCode', tenant)
