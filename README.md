@@ -4,6 +4,15 @@
 
 技术栈：Java 17 · Spring Boot 3.2 · MyBatis-Plus（租户行级插件）· MySQL 8 · Redis · RabbitMQ · Vue 3 + Vite + TypeScript + Element Plus · 微信原生小程序双工程 · Flutter 3 · Docker Compose。
 
+> 代码仓库：<https://github.com/quantaida/yuezizhongxin>（私有）
+>
+> ```bash
+> git clone https://github.com/quantaida/yuezizhongxin.git
+> cd yuezizhongxin
+> ```
+>
+> 主分支 `main`。提交前请先 `git pull --rebase`，依赖目录（`node_modules/`）与构建产物（`dist/`、`target/`）不入库，克隆后按下方「三、快速启动」安装依赖。
+
 ## 一、能力总览
 
 | 端 | 目录 | 说明 |
