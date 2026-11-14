@@ -1,0 +1,23 @@
+.head { align-items: baseline; margin-bottom: 20rpx; }
+.msg { padding: 24rpx; }
+.type-tag {
+  font-size: 21rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 999rpx;
+  background: #f0f8f4;
+  color: #246a54;
+}
+.type-tag.warn { background: #fdf5e8; color: #9a6a18; }
+.msg-title { font-size: 27rpx; color: #1f2421; font-weight: 600; }
+.msg-desc {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 25rpx;
+  color: #6b746f;
+  line-height: 1.7;
+}
+.msg-foot {
+  margin-top: 14rpx;
+  padding-top: 12rpx;
+  border-top: 1rpx solid #f2eee5;
+}

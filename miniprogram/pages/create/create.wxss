@@ -1,0 +1,2 @@
+.tip { display: block; margin: 8rpx 0 24rpx; }
+.deposit-note { display: block; margin-top: 14rpx; font-size: 22rpx; line-height: 1.7; }

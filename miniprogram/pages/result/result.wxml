@@ -1,0 +1,30 @@
+<view class="wrap result">
+  <view class="badge {{status}}">
+    <text class="badge-icon">{{status === 'paid' ? '✓' : (status === 'cancel' ? '!' : '…')}}</text>
+  </view>
+  <text class="title">{{title}}</text>
+  <text class="subtitle desc">{{desc}}</text>
+
+  <view wx:if="{{orderNo}}" class="card">
+    <view class="between">
+      <text class="muted">订单号</text>
+      <view class="row gap12" bindtap="copyOrderNo">
+        <text class="mono order-no">{{orderNo}}</text>
+        <text class="copy">复制</text>
+      </view>
+    </view>
+    <view wx:if="{{paymentId}}" class="divider"></view>
+    <view wx:if="{{paymentId}}" class="between">
+      <text class="muted">支付流水</text>
+      <text class="mono muted">{{paymentId}}</text>
+    </view>
+  </view>
+
+  <view class="tip">{{tip}}</view>
+
+  <view class="actions">
+    <view class="btn" bindtap="toOrders">查看我的订单</view>
+    <view class="btn ghost" bindtap="toHome">返回首页</view>
+    <text class="link" bindtap="callStaff">遇到问题？联系门店顾问</text>
+  </view>
+</view>

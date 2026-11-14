@@ -1,0 +1,2 @@
+.intro { display: block; margin: 10rpx 0 26rpx; line-height: 1.8; }
+.note { display: block; font-size: 22rpx; color: #8d968f; margin-top: 8rpx; }

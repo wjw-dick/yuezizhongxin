@@ -1,0 +1,323 @@
+<view class="wrap">
+  <!-- 未登录：手机号验证码登录 -->
+  <block wx:if="{{!logged}}">
+    <view class="login-hero">
+      <text class="login-title">会员登录</text>
+      <text class="login-sub">同一手机号自动关联到店订单、护理记录与积分权益</text>
+    </view>
+
+    <view class="card login-card">
+      <view class="field">
+        <text class="label">手机号</text>
+        <input
+          type="number"
+          maxlength="11"
+          value="{{phone}}"
+          bindinput="inputPhone"
+          placeholder="请输入 11 位手机号"
+        />
+      </view>
+      <view class="field">
+        <text class="label">验证码</text>
+        <view class="code-row">
+          <input
+            type="number"
+            maxlength="6"
+            value="{{code}}"
+            bindinput="inputCode"
+            placeholder="6 位验证码"
+          />
+          <text class="code-btn {{countdown > 0 ? 'off' : ''}}" bindtap="sendCode">
+            {{countdown > 0 ? countdown + 's' : '获取验证码'}}
+          </text>
+        </view>
+      </view>
+
+      <view wx:if="{{devCode}}" class="dev-tip">
+        <text>联调验证码：{{devCode}}（未接入短信通道时回显，正式环境不显示）</text>
+      </view>
+
+      <view class="btn" bindtap="doLogin">{{logging ? '登录中…' : '登录 / 注册'}}</view>
+      <text class="agree">登录即表示同意 <text class="link" data-type="terms" bindtap="showAgreement">用户协议</text> 与 <text class="link" data-type="privacy" bindtap="showAgreement">隐私政策</text></text>
+    </view>
+
+    <view class="card service-card">
+      <view class="between" bindtap="callStaff">
+        <text>联系门店顾问</text>
+        <text class="muted">{{site.phone || '400-000-0000'}} ›</text>
+      </view>
+      <view class="divider"></view>
+      <view class="between" bindtap="showAgreement" data-type="terms">
+        <text>服务说明</text>
+        <text class="muted">›</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 已登录：会员中心 -->
+  <block wx:else>
+    <view class="member-hero">
+      <view class="row gap16">
+        <view class="avatar">{{avatarChar}}</view>
+        <view class="col grow">
+          <text class="member-name">{{profile.nickname || '会员'}}</text>
+          <text class="member-phone">{{profile.phone || ''}}</text>
+        </view>
+        <text class="lang-chip" bindtap="showAgreement" data-type="privacy">隐私</text>
+      </view>
+      <view class="assets">
+        <view class="asset" data-panel="points" bindtap="openPanel">
+          <text class="asset-num">{{profile.points || 0}}</text>
+          <text class="asset-label">积分</text>
+        </view>
+        <view class="asset" data-panel="recharge" bindtap="openPanel">
+          <text class="asset-num">{{profile.balance || '0.00'}}</text>
+          <text class="asset-label">储值余额</text>
+        </view>
+        <view class="asset" data-panel="coupons" bindtap="openPanel">
+          <text class="asset-num">{{profile.couponCount || 0}}</text>
+          <text class="asset-label">可用券</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="tag-row" wx:if="{{profile.tags && profile.tags.length}}">
+      <text wx:for="{{profile.tags}}" wx:key="id" class="tag">{{item.name}}</text>
+    </view>
+
+    <view class="card menu">
+      <view class="menu-item" bindtap="toOrders">
+        <text class="menu-icon">单</text>
+        <text class="grow">我的订单</text>
+        <text class="muted">查看合同与支付 ›</text>
+      </view>
+      <view class="menu-item" bindtap="toCare">
+        <text class="menu-icon">护</text>
+        <text class="grow">护理记录</text>
+        <text class="muted">体征趋势与每日确认 ›</text>
+      </view>
+      <view class="menu-item" bindtap="toServices">
+        <text class="menu-icon">康</text>
+        <text class="grow">康复与月子餐</text>
+        <text class="muted">疗程余额、忌口登记 ›</text>
+      </view>
+      <view class="menu-item" data-panel="coupons" bindtap="openPanel">
+        <text class="menu-icon">券</text>
+        <text class="grow">优惠券</text>
+        <text class="muted">领券与使用记录 ›</text>
+      </view>
+      <view class="menu-item" data-panel="referral" bindtap="openPanel">
+        <text class="menu-icon">荐</text>
+        <text class="grow">转介绍</text>
+        <text class="muted">推荐好友得积分 ›</text>
+      </view>
+      <view class="menu-item" data-panel="addresses" bindtap="openPanel">
+        <text class="menu-icon">址</text>
+        <text class="grow">联系地址</text>
+        <text class="muted">收货与上门服务地址 ›</text>
+      </view>
+    </view>
+
+    <view class="card menu">
+      <view class="menu-item">
+        <text class="menu-icon">语</text>
+        <text class="grow">语言</text>
+        <picker mode="selector" range="{{langs}}" range-key="label" bindchange="pickLang">
+          <text class="muted">{{lang === 'en-US' ? 'English' : '简体中文'}} ›</text>
+        </picker>
+      </view>
+      <view class="menu-item" bindtap="callStaff">
+        <text class="menu-icon">话</text>
+        <text class="grow">联系门店</text>
+        <text class="muted">{{site.phone || '400-000-0000'}} ›</text>
+      </view>
+      <view class="menu-item" data-type="terms" bindtap="showAgreement">
+        <text class="menu-icon">约</text>
+        <text class="grow">用户协议</text>
+        <text class="muted">›</text>
+      </view>
+      <view class="menu-item" data-type="privacy" bindtap="showAgreement">
+        <text class="menu-icon">私</text>
+        <text class="grow">隐私政策</text>
+        <text class="muted">›</text>
+      </view>
+    </view>
+
+    <view class="btn ghost logout" bindtap="logout">退出登录</view>
+    <text class="muted foot">{{site.name || '月之孕月子中心'}}{{site.icp ? ' · ' + site.icp : ''}}</text>
+  </block>
+</view>
+
+<!-- 面板：积分 -->
+<view wx:if="{{panel === 'points'}}" class="mask" bindtap="closePanel">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-head between">
+      <text class="title">积分流水</text>
+      <text class="muted" bindtap="closePanel">关闭</text>
+    </view>
+    <view wx:if="{{points.length}}" class="sheet-scroll">
+      <view wx:for="{{points}}" wx:key="id" class="line">
+        <view class="col grow">
+          <text class="line-title">{{item.reason}}</text>
+          <text class="muted">{{item.createdTime}}</text>
+        </view>
+        <text class="{{item.changeValue > 0 ? 'plus' : 'minus'}}">{{item.changeValue > 0 ? '+' : ''}}{{item.changeValue}}</text>
+      </view>
+    </view>
+    <view wx:else class="empty"><text>暂无积分记录</text></view>
+  </view>
+</view>
+
+<!-- 面板：优惠券 -->
+<view wx:if="{{panel === 'coupons'}}" class="mask" bindtap="closePanel">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-head between">
+      <text class="title">优惠券</text>
+      <text class="muted" bindtap="closePanel">关闭</text>
+    </view>
+    <view class="sheet-scroll">
+      <view wx:if="{{claimable.length}}">
+        <text class="block-title">可领取</text>
+        <view wx:for="{{claimable}}" wx:key="id" class="coupon">
+          <view class="col grow">
+            <text class="coupon-name">{{item.name}}</text>
+            <text class="muted">满 {{item.threshold}} 可用 · 至 {{item.endTime}}</text>
+          </view>
+          <text class="btn sm" data-id="{{item.id}}" bindtap="claim">领取</text>
+        </view>
+      </view>
+
+      <text class="block-title">我的券</text>
+      <view wx:if="{{coupons.length}}">
+        <view wx:for="{{coupons}}" wx:key="memberCoupon.id" class="coupon">
+          <view class="col grow">
+            <text class="coupon-name">{{item.coupon.name}}</text>
+            <text class="muted">¥{{item.coupon.amount}} · {{item.memberCoupon.status}}</text>
+          </view>
+          <text class="tag {{item.memberCoupon.status === '未使用' ? '' : 'muted'}}">{{item.memberCoupon.status}}</text>
+        </view>
+      </view>
+      <view wx:else class="empty"><text>暂无优惠券</text></view>
+    </view>
+  </view>
+</view>
+
+<!-- 面板：储值 -->
+<view wx:if="{{panel === 'recharge'}}" class="mask" bindtap="closePanel">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-head between">
+      <text class="title">储值</text>
+      <text class="muted" bindtap="closePanel">关闭</text>
+    </view>
+    <view class="sheet-scroll">
+      <view class="balance-card">
+        <text class="muted">当前余额（含赠送）</text>
+        <text class="balance">¥{{profile.balance || '0.00'}}</text>
+      </view>
+      <view class="row gap12">
+        <view class="btn sm ghost" bindtap="showRule">查看预付卡规则</view>
+        <text wx:if="{{ruleShown}}" class="tag">已阅读</text>
+      </view>
+      <view class="field recharge-field">
+        <text class="label">储值金额（满 5000 赠 5%）</text>
+        <input type="digit" value="{{rechargeAmount}}" bindinput="inputRecharge" placeholder="请输入金额" />
+      </view>
+      <view class="btn" bindtap="submitRecharge">确认储值</view>
+
+      <text class="block-title">储值记录</text>
+      <view wx:if="{{recharges.length}}">
+        <view wx:for="{{recharges}}" wx:key="id" class="line">
+          <view class="col grow">
+            <text class="line-title">{{item.rechargeNo}}</text>
+            <text class="muted">本金 ¥{{item.amount}} · 赠 ¥{{item.giftAmount}}</text>
+          </view>
+          <text class="muted">{{item.status}}</text>
+        </view>
+      </view>
+      <view wx:else class="empty"><text>暂无储值记录</text></view>
+    </view>
+  </view>
+</view>
+
+<!-- 面板：转介绍 -->
+<view wx:if="{{panel === 'referral'}}" class="mask" bindtap="closePanel">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-head between">
+      <text class="title">转介绍</text>
+      <text class="muted" bindtap="closePanel">关闭</text>
+    </view>
+    <view class="sheet-scroll">
+      <view class="ref-card">
+        <text class="ref-title">推荐好友到店签约</text>
+        <text class="muted">被推荐人到店签约后，您获 500 积分（可抵增值服务）</text>
+        <view class="btn sm ref-btn" bindtap="copyReferral">复制邀请文案</view>
+      </view>
+      <text class="block-title">我的推荐记录</text>
+      <view wx:if="{{referrals.length}}">
+        <view wx:for="{{referrals}}" wx:key="id" class="line">
+          <view class="col grow">
+            <text class="line-title">奖励 {{item.rewardPoints}} 积分</text>
+            <text class="muted">{{item.createdTime}}</text>
+          </view>
+          <text class="tag {{item.status === '已结算' ? '' : 'warn'}}">{{item.status}}</text>
+        </view>
+      </view>
+      <view wx:else class="empty"><text>还没有推荐记录</text></view>
+    </view>
+  </view>
+</view>
+
+<!-- 面板：地址 -->
+<view wx:if="{{panel === 'addresses'}}" class="mask" bindtap="closePanel">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-head between">
+      <text class="title">联系地址</text>
+      <text class="muted" bindtap="closePanel">关闭</text>
+    </view>
+    <view class="sheet-scroll">
+      <view wx:if="{{addresses.length}}">
+        <view wx:for="{{addresses}}" wx:key="id" class="line">
+          <view class="col grow">
+            <text class="line-title">{{item.receiver}} {{item.phone}}</text>
+            <text class="muted">{{item.region}}{{item.detail}}</text>
+          </view>
+          <text wx:if="{{item.isDefault === 1}}" class="tag">默认</text>
+          <text class="del" data-id="{{item.id}}" bindtap="removeAddress">删除</text>
+        </view>
+      </view>
+      <view wx:else class="empty"><text>暂无地址</text></view>
+      <view class="btn ghost add-btn" bindtap="openAddress">新增地址</view>
+    </view>
+  </view>
+</view>
+
+<!-- 新增地址 -->
+<view wx:if="{{showAddress}}" class="mask" bindtap="closeAddress">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-head between">
+      <text class="title">新增地址</text>
+      <text class="muted" bindtap="closeAddress">关闭</text>
+    </view>
+    <view class="field">
+      <text class="label">收货人</text>
+      <input value="{{addressForm.receiver}}" data-field="receiver" bindinput="inputAddress" placeholder="请输入姓名" />
+    </view>
+    <view class="field">
+      <text class="label">手机号</text>
+      <input type="number" maxlength="11" value="{{addressForm.phone}}" data-field="phone" bindinput="inputAddress" placeholder="请输入手机号" />
+    </view>
+    <view class="field">
+      <text class="label">所在区域</text>
+      <input value="{{addressForm.region}}" data-field="region" bindinput="inputAddress" placeholder="如：杭州市西湖区" />
+    </view>
+    <view class="field">
+      <text class="label">详细地址</text>
+      <input value="{{addressForm.detail}}" data-field="detail" bindinput="inputAddress" placeholder="街道、门牌号" />
+    </view>
+    <view class="row gap12 default-row" bindtap="toggleDefault">
+      <text class="checkbox {{addressForm.isDefault ? 'on' : ''}}">{{addressForm.isDefault ? '✓' : ''}}</text>
+      <text>设为默认地址</text>
+    </view>
+    <view class="btn" bindtap="saveAddress">保存地址</view>
+  </view>
+</view>

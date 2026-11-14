@@ -1,0 +1,34 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/workbench/workbench",
+    "pages/exec/exec",
+    "pages/handover/handover",
+    "pages/abnormal/abnormal",
+    "pages/meal/meal",
+    "pages/attendance/attendance",
+    "pages/message/message"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#1e5344",
+    "navigationBarTitleText": "护理工作台",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f7f6f2"
+  },
+  "tabBar": {
+    "color": "#8d968f",
+    "selectedColor": "#246a54",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/workbench/workbench", "text": "工作台" },
+      { "pagePath": "pages/meal/meal", "text": "出餐" },
+      { "pagePath": "pages/message/message", "text": "消息" },
+      { "pagePath": "pages/attendance/attendance", "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

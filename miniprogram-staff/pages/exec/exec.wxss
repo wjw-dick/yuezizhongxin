@@ -1,0 +1,14 @@
+.head { padding: 26rpx 24rpx; }
+.meta { margin-top: 12rpx; }
+.meta .muted { display: block; }
+.care-mode { margin-top: 4rpx; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18rpx; }
+.tip { display: block; margin-top: 4rpx; line-height: 1.6; }
+
+.recent {
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f2eee5;
+}
+.recent:last-child { border-bottom: none; }
+.recent-name { font-size: 26rpx; color: #1f2421; }
+.recent-content { display: block; margin-top: 6rpx; line-height: 1.6; }

@@ -1,0 +1,28 @@
+# 统一以 LF 存储，避免 Windows/macOS 协作时产生无意义 diff
+* text=auto eol=lf
+
+# Windows 脚本保留 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# 二进制文件不做行尾转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.jar binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.xlsx binary
+*.docx binary
+*.pdf binary
+
+# 语言统计
+*.java linguist-language=Java
+*.vue linguist-language=Vue
+*.wxml linguist-language=HTML
+*.wxss linguist-language=CSS

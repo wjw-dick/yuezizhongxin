@@ -1,0 +1,206 @@
+# 生产部署：nginx + backend + mysql + redis + rabbitmq + minio + backup + monitor
+#
+# 用法：
+#   cp .env.example .env && vim .env         # 填写域名、密码、密钥
+#   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d
+#
+# 约定：
+#   - 所有密码与密钥只从 .env 读取，仓库内不落明文
+#   - 数据库与对象存储不对外暴露端口，仅容器网络可访问
+#   - backend 只在 127.0.0.1:8080 监听，由宿主机 nginx 或内置 nginx 反代
+
+name: yzz-prod
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: always
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+08:00
+      - --max-connections=500
+      - --innodb-buffer-pool-size=1G
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: yzz_platform
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ../sql:/docker-entrypoint-initdb.d:ro
+      - ./backup:/backup
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    networks: [yzz]
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+    networks: [yzz]
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: /yuezizhongxin
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 20s
+      timeout: 10s
+      retries: 8
+    networks: [yzz]
+
+  minio:
+    image: minio/minio:latest
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 20s
+      timeout: 10s
+      retries: 8
+    networks: [yzz]
+
+  backend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DB: yzz_platform
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      YZZ_CACHE_PROVIDER: redis
+      YZZ_STORAGE_DRIVER: ${YZZ_STORAGE_DRIVER:-local}
+      YZZ_SECURITY_TOKEN_SECRET: ${TOKEN_SECRET}
+      YZZ_SECURITY_SECRET_KEY: ${SECRET_KEY}
+      YZZ_WXPAY_MCH_ID: ${WXPAY_MCH_ID:-}
+      YZZ_WXPAY_SERIAL_NO: ${WXPAY_SERIAL_NO:-}
+      YZZ_WXPAY_PRIVATE_KEY: ${WXPAY_PRIVATE_KEY:-}
+      YZZ_WXPAY_API_V3_KEY: ${WXPAY_API_V3_KEY:-}
+      YZZ_MP_APPSECRET_FALLBACK: ${MP_APPSECRET:-}
+      YZZ_SMS_MOCK: "false"
+      TZ: Asia/Shanghai
+    volumes:
+      - app-storage:/app/data/storage
+      - app-logs:/app/logs
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/actuator/health | grep -q UP"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 90s
+    networks: [yzz]
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: always
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN}
+      SITE_DOMAIN: ${SITE_DOMAIN}
+      API_DOMAIN: ${API_DOMAIN}
+      H5_DOMAIN: ${H5_DOMAIN}
+    volumes:
+      - ./nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./nginx/proxy_common.inc:/etc/nginx/conf.d/proxy_common.inc:ro
+      - ../admin-web/dist:/usr/share/nginx/html/admin:ro
+      - ../web-site/dist:/usr/share/nginx/html/site:ro
+      - ../h5/dist:/usr/share/nginx/html/h5:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - nginx-logs:/var/log/nginx
+      - app-storage:/usr/share/nginx/html/files:ro
+    networks: [yzz]
+
+  backup:
+    image: mysql:8.0
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+    volumes:
+      - ./backup:/backup
+      - ./backup.sh:/backup.sh:ro
+    entrypoint: ["/bin/bash", "/backup.sh"]
+    networks: [yzz]
+
+  # 监控：Prometheus 抓取后端 actuator，Grafana 看板
+  prometheus:
+    image: prom/prometheus:latest
+    restart: always
+    volumes:
+      - ./monitor/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    expose:
+      - "9090"
+    networks: [yzz]
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: always
+    depends_on: [prometheus]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin123}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    expose:
+      - "3000"
+    networks: [yzz]
+
+volumes:
+  mysql-data:
+  redis-data:
+  rabbitmq-data:
+  minio-data:
+  app-storage:
+  app-logs:
+  nginx-logs:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  yzz:
+    driver: bridge

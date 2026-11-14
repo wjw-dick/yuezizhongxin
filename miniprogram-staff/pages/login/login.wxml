@@ -1,0 +1,31 @@
+<view class="login-wrap">
+  <view class="brand">
+    <view class="brand-mark">月</view>
+    <text class="brand-name">护理工作台</text>
+    <text class="brand-sub">月之孕月子中心 · 员工端</text>
+  </view>
+
+  <view class="card login-card">
+    <view class="field">
+      <text class="label">门店编码</text>
+      <input value="{{tenantCode}}" data-field="tenantCode" bindinput="input" placeholder="如 demo" />
+    </view>
+    <view class="field">
+      <text class="label">账号</text>
+      <input value="{{username}}" data-field="username" bindinput="input" placeholder="员工登录账号" />
+    </view>
+    <view class="field">
+      <text class="label">密码</text>
+      <input password value="{{password}}" data-field="password" bindinput="input" placeholder="登录密码" />
+    </view>
+
+    <view wx:if="{{tip}}" class="tip">{{tip}}</view>
+
+    <view class="btn" bindtap="login">{{loading ? '登录中…' : '登录'}}</view>
+    <text class="muted note">账号由门店主管在「员工档案」中开通并绑定；忘记密码请联系主管重置</text>
+  </view>
+
+  <view class="safe-note">
+    <text>本端不展示客户价格与支付信息，仅用于护理执行、交接与出餐核对</text>
+  </view>
+</view>

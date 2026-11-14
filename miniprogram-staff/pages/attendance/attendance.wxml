@@ -1,0 +1,40 @@
+<view class="wrap">
+  <view class="hero profile-hero">
+    <view class="row gap16">
+      <view class="avatar">{{avatarChar}}</view>
+      <view class="col grow">
+        <text class="title">{{profile.name || '员工'}}</text>
+        <text class="subtitle">{{profile.jobType || '护理'}} · {{profile.phone || ''}}</text>
+      </view>
+    </view>
+    <view class="clock-row">
+      <view class="btn ghost sm clock-btn" data-type="in" bindtap="clock">上班打卡</view>
+      <view class="btn sm clock-btn" data-type="out" bindtap="clock">下班打卡</view>
+    </view>
+  </view>
+
+  <view class="section-title">本月考勤</view>
+  <view wx:if="{{records.length}}" class="card">
+    <view wx:for="{{records}}" wx:key="id" class="line">
+      <view class="col grow">
+        <text class="date">{{item.attendanceDate}}</text>
+        <text class="muted">{{item.location || '未记录位置'}}</text>
+      </view>
+      <view class="col right">
+        <text class="time">上班 {{item.checkInTime || '—'}}</text>
+        <text class="muted">下班 {{item.checkOutTime || '—'}}</text>
+      </view>
+    </view>
+  </view>
+  <view wx:else class="empty">
+    <text class="strong">本月暂无考勤记录</text>
+    <text>上下班请在门店范围内打卡</text>
+  </view>
+
+  <view class="card note">
+    <text class="note-title">温馨提示</text>
+    <text class="muted note-text">打卡位置用于核算考勤，请勿代打卡；如定位失败可选择「定位未授权」打卡，由主管核对。</text>
+  </view>
+
+  <view class="btn ghost logout" bindtap="logout">退出登录</view>
+</view>

@@ -1,0 +1,23 @@
+# Prometheus 抓取配置：后端 actuator + 自监控
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+  external_labels:
+    env: prod
+
+scrape_configs:
+  - job_name: yzz-backend
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["backend:8080"]
+        labels:
+          app: yzz-api
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # 关键业务告警建议在 Grafana 中配合以下指标：
+  #   http_server_requests_seconds_count{uri="/api/open/orders",status="200"}
+  #   jvm_memory_used_bytes、hikaricp_connections_active
+  #   tenant_quota_usage（自定义指标，见 ReportService.metrics）

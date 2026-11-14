@@ -1,0 +1,50 @@
+<view class="wrap pb-bar">
+  <view class="card">
+    <text class="title">预约参观</text>
+    <text class="muted intro">到店可参观在售房型、试吃当日月子餐，并与护理主管当面沟通（约 60 分钟）。</text>
+
+    <view class="field">
+      <text class="label">称呼 *</text>
+      <input placeholder="如 王女士" value="{{form.customerName}}" data-key="customerName" bindinput="onInput" />
+    </view>
+    <view class="field">
+      <text class="label">手机号 *</text>
+      <input type="number" maxlength="11" placeholder="11 位手机号" value="{{form.phone}}" data-key="phone" bindinput="onInput" />
+    </view>
+    <view class="field">
+      <text class="label">预产期</text>
+      <picker mode="date" value="{{form.dueDate}}" bindchange="onDue">
+        <view class="picker-box {{form.dueDate ? '' : 'placeholder'}}">{{form.dueDate || '选择预产期（可选）'}}</view>
+      </picker>
+    </view>
+    <view class="field">
+      <text class="label">参观日期 *</text>
+      <picker mode="date" value="{{form.visitDate}}" start="{{minDate}}" bindchange="onDate">
+        <view class="picker-box">{{form.visitDate}}</view>
+      </picker>
+    </view>
+    <view class="field">
+      <text class="label">到店时段 *</text>
+      <picker range="{{slots}}" value="{{slotIndex}}" bindchange="onSlot">
+        <view class="picker-box">{{slots[slotIndex]}}</view>
+      </picker>
+    </view>
+    <view class="field">
+      <text class="label">到店人数</text>
+      <picker range="{{[1,2,3,4,5]}}" value="{{form.personCount - 1}}" bindchange="onPerson">
+        <view class="picker-box">{{form.personCount}} 人</view>
+      </picker>
+    </view>
+    <view class="field">
+      <text class="label">想了解的问题</text>
+      <textarea placeholder="如套房档期、康复项目包含哪些、能否试餐" value="{{form.remark}}" data-key="remark" bindinput="onInput" />
+    </view>
+
+    <text class="muted note">提交即表示同意我们通过电话或微信联系您，信息仅用于本次服务。</text>
+  </view>
+</view>
+
+<view class="bar">
+  <view class="btn ghost" bindtap="callStore">电话咨询</view>
+  <view class="btn" bindtap="submit" disabled="{{submitting}}">{{submitting ? '提交中…' : '提交预约'}}</view>
+</view>

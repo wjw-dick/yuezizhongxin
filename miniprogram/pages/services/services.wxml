@@ -1,0 +1,224 @@
+<view class="wrap">
+  <view wx:if="{{!logged}}" class="empty">
+    <text class="strong">登录后使用服务</text>
+    <text>康复预约、月子餐与忌口登记对在住客户开放</text>
+    <view class="btn empty-btn" bindtap="toLogin">立即登录</view>
+  </view>
+
+  <view wx:elif="{{!living}}" class="empty">
+    <text class="strong">暂未入馆</text>
+    <text>入馆后可预约产后康复、查看每日月子餐</text>
+    <view class="btn ghost empty-btn" bindtap="toRooms">选择房型套餐</view>
+  </view>
+
+  <block wx:else>
+    <view class="seg-top">
+      <text class="seg-btn {{tab === 'rehab' ? 'on' : ''}}" data-tab="rehab" bindtap="switchTab">产后康复</text>
+      <text class="seg-btn {{tab === 'meal' ? 'on' : ''}}" data-tab="meal" bindtap="switchTab">月子餐</text>
+    </view>
+
+    <!-- 康复 -->
+    <block wx:if="{{tab === 'rehab'}}">
+      <view class="section-title">我的疗程卡</view>
+      <view wx:if="{{rehab.courses.length}}" class="grid2">
+        <view wx:for="{{rehab.courses}}" wx:key="course.id" class="card course">
+          <text class="course-name">{{item.itemName}}</text>
+          <view class="between course-remain">
+            <text class="price big">{{item.remain}}</text>
+            <text class="muted">/ {{item.course.totalTimes}} 次</text>
+          </view>
+          <view class="progress"><view class="inner" style="width: {{item.remain * 100 / item.course.totalTimes}}%"></view></view>
+          <text class="muted course-meta">到期 {{item.course.expireDate}}</text>
+          <text class="muted course-meta">{{item.course.source}}</text>
+        </view>
+      </view>
+      <view wx:else class="card">
+        <text class="muted">套餐内暂未包含康复项目，可联系顾问增购疗程卡</text>
+      </view>
+
+      <view class="btn appoint-btn" bindtap="openAppoint">预约康复项目</view>
+
+      <view class="section-title">预约记录</view>
+      <view wx:if="{{rehab.appointments.length}}" class="card">
+        <view wx:for="{{rehab.appointments}}" wx:key="id" class="line">
+          <view class="col grow">
+            <text class="line-title">{{item.appointDate}} {{item.startTime}}-{{item.endTime}}</text>
+            <text class="muted">{{item.status}}</text>
+          </view>
+          <text
+            wx:if="{{item.status === '待确认' || item.status === '已预约'}}"
+            class="cancel"
+            data-id="{{item.id}}"
+            bindtap="cancelAppoint"
+          >取消</text>
+        </view>
+      </view>
+      <view wx:else class="card"><text class="muted">暂无预约记录</text></view>
+
+      <view class="section-title">康复评估</view>
+      <view wx:if="{{rehab.assesses.length}}" class="card">
+        <view wx:for="{{rehab.assesses}}" wx:key="id" class="line col">
+          <view class="between">
+            <text class="line-title">盆底肌 {{item.pelvicScore}} 分 · 腹直肌 {{item.diastasisCm}} cm</text>
+            <text class="tag {{item.pelvicScore >= 80 ? '' : 'warn'}}">情绪 {{item.moodScore}}</text>
+          </view>
+          <text class="muted">{{item.posture}}</text>
+          <text class="muted assess-report">{{item.report}}</text>
+        </view>
+      </view>
+      <view wx:else class="card"><text class="muted">入馆 42 天复查时会生成评估报告</text></view>
+
+      <view class="section-title">执行记录</view>
+      <view wx:if="{{rehab.records.length}}" class="card">
+        <view wx:for="{{rehab.records}}" wx:key="id" class="line col">
+          <view class="between">
+            <text class="line-title">{{item.itemName}}</text>
+            <text class="muted">{{item.durationMin}} 分钟</text>
+          </view>
+          <text class="muted">{{item.feedback}}</text>
+        </view>
+      </view>
+      <view wx:else class="card"><text class="muted">完成第一次治疗后这里会显示记录</text></view>
+    </block>
+
+    <!-- 月子餐 -->
+    <block wx:else>
+      <view class="between meal-head">
+        <text class="section-title no-margin">今日餐单</text>
+        <text class="muted">{{meal.date}}</text>
+      </view>
+      <view wx:if="{{meal.meals.length}}" class="card">
+        <view wx:for="{{meal.meals}}" wx:key="id" class="meal-row">
+          <text class="meal-type">{{item.mealType}}</text>
+          <view class="grow">
+            <text class="meal-dish">{{item.dishes}}</text>
+            <view class="row gap12 meal-tags">
+              <text wx:if="{{item.specialTag}}" class="tag warn">{{item.specialTag}}</text>
+              <text wx:if="{{item.extraCharge > 0}}" class="tag bronze">加餐 ¥{{item.extraCharge}}</text>
+              <text class="tag muted">{{item.checked ? '已出餐' : '待出餐'}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="card"><text class="muted">今日餐单尚未生成，营养师每日 20:00 排次日餐单</text></view>
+
+      <view class="row gap12 meal-actions">
+        <view class="btn sm ghost" bindtap="openRestrict">登记忌口/过敏</view>
+        <view class="btn sm" bindtap="openAddon">申请加餐</view>
+      </view>
+
+      <view class="section-title">忌口与过敏原</view>
+      <view wx:if="{{meal.restricts.length}}" class="card">
+        <view wx:for="{{meal.restricts}}" wx:key="id" class="line">
+          <text class="tag {{item.restrictType === '过敏' ? 'warn' : 'muted'}}">{{item.restrictType}}</text>
+          <text class="grow restrict-content">{{item.content}}</text>
+        </view>
+      </view>
+      <view wx:else class="card"><text class="muted">尚未登记忌口，登记后厨房出餐自动规避</text></view>
+    </block>
+  </block>
+</view>
+
+<!-- 预约康复 -->
+<view wx:if="{{showAppoint}}" class="mask" bindtap="closeAppoint">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-head between">
+      <text class="title">预约康复项目</text>
+      <text class="muted" bindtap="closeAppoint">关闭</text>
+    </view>
+    <text class="muted sheet-tip">仅可预约套餐内还有剩余次数的项目，提交后由门店确认治疗师</text>
+
+    <view class="field">
+      <text class="label">康复项目</text>
+      <picker mode="selector" range="{{courseOptions}}" range-key="label" bindchange="pickCourse">
+        <view class="picker-box">
+          {{appoint.courseIndex >= 0 ? courseOptions[appoint.courseIndex].label : '请选择项目'}}
+        </view>
+      </picker>
+    </view>
+
+    <view class="field">
+      <text class="label">预约日期</text>
+      <picker mode="date" value="{{appoint.date}}" start="{{today}}" bindchange="onDate">
+        <view class="picker-box">{{appoint.date}}</view>
+      </picker>
+    </view>
+
+    <view class="row gap16">
+      <view class="field grow">
+        <text class="label">开始时间</text>
+        <picker mode="time" value="{{appoint.startTime}}" bindchange="onStart">
+          <view class="picker-box">{{appoint.startTime}}</view>
+        </picker>
+      </view>
+      <view class="field grow">
+        <text class="label">结束时间</text>
+        <picker mode="time" value="{{appoint.endTime}}" bindchange="onEnd">
+          <view class="picker-box">{{appoint.endTime}}</view>
+        </picker>
+      </view>
+    </view>
+
+    <view class="btn" bindtap="submitAppoint">提交预约</view>
+  </view>
+</view>
+
+<!-- 登记忌口 -->
+<view wx:if="{{showRestrict}}" class="mask" bindtap="closeRestrict">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-head between">
+      <text class="title">登记忌口/过敏原</text>
+      <text class="muted" bindtap="closeRestrict">关闭</text>
+    </view>
+    <text class="muted sheet-tip">登记后厨房出餐自动规避，特殊忌口营养师会重新排餐</text>
+    <view class="field">
+      <text class="label">类型</text>
+      <view class="chips">
+        <text
+          wx:for="{{['忌口', '过敏']}}"
+          wx:key="*this"
+          class="chip {{restrictForm.restrictType === item ? 'on' : ''}}"
+          data-value="{{item}}"
+          bindtap="pickRestrictType"
+        >{{item}}</text>
+      </view>
+    </view>
+    <view class="field">
+      <text class="label">内容</text>
+      <input value="{{restrictForm.content}}" bindinput="inputRestrict" placeholder="如：海鲜、芒果、香菜" />
+    </view>
+    <view class="btn" bindtap="submitRestrict">保存</view>
+  </view>
+</view>
+
+<!-- 申请加餐 -->
+<view wx:if="{{showAddon}}" class="mask" bindtap="closeAddon">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-head between">
+      <text class="title">申请加餐</text>
+      <text class="muted" bindtap="closeAddon">关闭</text>
+    </view>
+    <text class="muted sheet-tip">加餐单独计费，出馆结算时一并收取；免费加餐需营养师确认</text>
+    <view class="field">
+      <text class="label">时段</text>
+      <view class="chips">
+        <text
+          wx:for="{{mealTypes}}"
+          wx:key="*this"
+          class="chip {{addon.mealType === item ? 'on' : ''}}"
+          data-value="{{item}}"
+          bindtap="pickMealType"
+        >{{item}}</text>
+      </view>
+    </view>
+    <view class="field">
+      <text class="label">加餐内容</text>
+      <input value="{{addon.dishes}}" data-field="dishes" bindinput="inputAddon" placeholder="如：红豆汤 + 全麦面包" />
+    </view>
+    <view class="field">
+      <text class="label">预计费用（元，0 表示免费）</text>
+      <input value="{{addon.charge}}" data-field="charge" type="digit" bindinput="inputAddon" placeholder="0" />
+    </view>
+    <view class="btn" bindtap="submitAddon">提交申请</view>
+  </view>
+</view>

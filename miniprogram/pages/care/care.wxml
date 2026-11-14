@@ -1,0 +1,187 @@
+<view class="wrap">
+  <view wx:if="{{!logged}}" class="empty">
+    <text class="strong">登录后查看护理记录</text>
+    <text>护理摘要、体征趋势与每日确认仅对在住客户开放</text>
+    <view class="btn empty-btn" bindtap="toLogin">立即登录</view>
+  </view>
+
+  <block wx:elif="{{!living}}">
+    <view class="empty">
+      <text class="strong">暂未入馆</text>
+      <text>入馆当天护理计划自动生成，届时可在这里查看每日护理与宝宝体征</text>
+      <view class="btn ghost empty-btn" bindtap="toRooms">选择房型套餐</view>
+    </view>
+  </block>
+
+  <block wx:else>
+    <view class="hero care-hero">
+      <view class="between">
+        <view class="col">
+          <text class="title">{{order.customerName}}</text>
+          <text class="subtitle">{{roomNo ? roomNo + ' 房' : '房间待分配'}} · {{order.careMode}}</text>
+        </view>
+        <view class="ring" style="{{ringStyle}}">
+          <text class="ring-num">{{rate}}%</text>
+          <text class="ring-label">计划完成</text>
+        </view>
+      </view>
+      <view class="row gap16 hero-meta">
+        <text class="tag-light">入馆 {{order.checkinDate}}</text>
+        <text class="tag-light">出馆 {{order.checkoutDate}}</text>
+      </view>
+    </view>
+
+    <view class="section-title">今日护理</view>
+    <view wx:if="{{todayItems.length}}" class="card">
+      <view wx:for="{{todayItems}}" wx:key="id" class="plan-item">
+        <view class="dot {{item.status === '已完成' ? 'done' : ''}}"></view>
+        <view class="grow">
+          <view class="between">
+            <text class="plan-name">{{item.itemName}}</text>
+            <text class="muted">{{item.timeSlot}}</text>
+          </view>
+          <text class="muted">{{item.targetType}} · {{item.status}}</text>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="card">
+      <text class="muted">今日暂无护理项，如有需要请联系护理站</text>
+    </view>
+
+    <view class="row gap12 quick">
+      <view class="btn sm ghost" bindtap="openConfirm">每日护理确认</view>
+      <view class="btn sm" bindtap="openFeedback">反馈问题</view>
+    </view>
+
+    <view class="section-title">体征趋势</view>
+    <view class="seg">
+      <text class="seg-item {{trendTab === '产妇' ? 'on' : ''}}" data-type="产妇" bindtap="pickTrend">妈妈体温</text>
+      <text class="seg-item {{trendTab === '新生儿' ? 'on' : ''}}" data-type="新生儿" bindtap="pickTrend">宝宝体温</text>
+    </view>
+    <view class="card chart">
+      <block wx:if="{{(trendTab === '产妇' ? trendMom : trendBaby).length}}">
+        <view class="bars">
+          <view
+            wx:for="{{trendTab === '产妇' ? trendMom : trendBaby}}"
+            wx:key="label"
+            class="bar-col"
+          >
+            <text class="bar-val">{{item.value}}</text>
+            <view class="bar-shape" style="height: {{item.height}}rpx"></view>
+            <text class="bar-label">{{item.label}}</text>
+          </view>
+        </view>
+        <text class="muted chart-note">单位 ℃，取最近 14 次记录；持续 ≥37.5℃ 请及时反馈</text>
+      </block>
+      <view wx:else class="empty small">
+        <text>暂无{{trendTab}}体温记录</text>
+        <text class="muted">护理员每次测量后同步到这里</text>
+      </view>
+    </view>
+
+    <view class="section-title">护理记录</view>
+    <view wx:if="{{records.length}}" class="timeline">
+      <view wx:for="{{records}}" wx:key="id" class="tl-item">
+        <view class="tl-left">
+          <text class="tl-time">{{item.submitTime}}</text>
+          <text class="tl-type">{{item.targetType}}</text>
+        </view>
+        <view class="tl-body card">
+          <text class="tl-title">{{item.itemName}}</text>
+          <text class="tl-content">{{item.content}}</text>
+          <view class="tl-metrics">
+            <text wx:if="{{item.temperature}}" class="tag muted">体温 {{item.temperature}}℃</text>
+            <text wx:if="{{item.weight}}" class="tag muted">体重 {{item.weight}}kg</text>
+            <text wx:if="{{item.jaundiceValue}}" class="tag warn">黄疸 {{item.jaundiceValue}}</text>
+            <text wx:if="{{item.feedingAmount}}" class="tag muted">喂养 {{item.feedingAmount}}ml</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="empty">
+      <text class="strong">暂无护理记录</text>
+      <text>护理员完成操作后会实时同步</text>
+    </view>
+
+    <view class="btn ghost bottom-btn" bindtap="callStaff">联系护理站</view>
+  </block>
+</view>
+
+<view wx:if="{{showFeedback}}" class="mask" bindtap="closeFeedback">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-head between">
+      <text class="title">反馈问题</text>
+      <text class="muted" bindtap="closeFeedback">关闭</text>
+    </view>
+    <text class="muted sheet-tip">护理主管 30 分钟内响应；紧急情况请直接按床头呼叫铃</text>
+
+    <view class="field">
+      <text class="label">问题类型</text>
+      <view class="chips">
+        <text
+          wx:for="{{['家属反馈', '宝宝护理', '妈妈护理', '餐饮问题', '环境设施']}}"
+          wx:key="*this"
+          class="chip {{feedback.abnormalType === item ? 'on' : ''}}"
+          data-value="{{item}}"
+          bindtap="pickType"
+        >{{item}}</text>
+      </view>
+    </view>
+
+    <view class="field">
+      <text class="label">紧急程度</text>
+      <view class="chips">
+        <text
+          wx:for="{{['一般', '紧急']}}"
+          wx:key="*this"
+          class="chip {{feedback.urgency === item ? 'on' : ''}}"
+          data-value="{{item}}"
+          bindtap="pickUrgency"
+        >{{item}}</text>
+      </view>
+    </view>
+
+    <view class="field">
+      <text class="label">问题描述</text>
+      <textarea
+        value="{{feedback.description}}"
+        data-field="description"
+        bindinput="inputFeedback"
+        placeholder="请描述发生时间、位置与具体情况"
+        maxlength="300"
+      />
+    </view>
+
+    <view class="btn" bindtap="submitFeedback">提交反馈</view>
+  </view>
+</view>
+
+<view wx:if="{{showConfirm}}" class="mask" bindtap="closeConfirm">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-head between">
+      <text class="title">每日护理确认</text>
+      <text class="muted" bindtap="closeConfirm">关闭</text>
+    </view>
+    <text class="muted sheet-tip">确认结果会写入护理记录，作为服务质控依据</text>
+
+    <view class="field">
+      <text class="label">今日护理是否完成</text>
+      <view class="chips">
+        <text class="chip {{confirmForm.satisfied ? 'on' : ''}}" data-value="1" bindtap="pickSatisfied">已完成，满意</text>
+        <text class="chip {{!confirmForm.satisfied ? 'on' : ''}}" data-value="0" bindtap="pickSatisfied">有异议</text>
+      </view>
+    </view>
+
+    <view class="field">
+      <text class="label">补充说明（选填）</text>
+      <textarea
+        value="{{confirmForm.remark}}"
+        bindinput="inputConfirm"
+        placeholder="例如：希望明天上午做抚触"
+        maxlength="200"
+      />
+    </view>
+
+    <view class="btn" bindtap="submitConfirm">提交确认</view>
+  </view>
+</view>

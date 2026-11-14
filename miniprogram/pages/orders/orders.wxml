@@ -1,0 +1,183 @@
+<view class="wrap">
+  <view wx:if="{{!logged}}" class="empty">
+    <text class="strong">登录后查看我的订单</text>
+    <text>手机号验证码登录，同一手机号自动关联到店订单</text>
+    <view class="btn login-btn" bindtap="toLogin">立即登录</view>
+  </view>
+
+  <block wx:else>
+    <scroll-view scroll-x class="tabs">
+      <view
+        wx:for="{{tabs}}"
+        wx:key="*this"
+        class="tab {{tab === item ? 'on' : ''}}"
+        data-tab="{{item}}"
+        bindtap="pickTab"
+      >{{item}}</view>
+    </scroll-view>
+
+    <view
+      wx:for="{{list}}"
+      wx:key="id"
+      class="card order"
+      data-no="{{item.orderNo}}"
+      bindtap="openDetail"
+    >
+      <view class="between">
+        <text class="mono order-no">{{item.orderNo}}</text>
+        <text class="status {{item.tone}}">{{item.status}}</text>
+      </view>
+      <view class="between dates">
+        <text class="date">{{item.checkinDate}} 入馆</text>
+        <text class="muted">→</text>
+        <text class="date">{{item.checkoutDate}} 出馆</text>
+      </view>
+      <text class="muted">{{item.customerName}} · {{item.days}} 天 · {{item.careMode}}</text>
+
+      <view class="amount-row">
+        <view class="amount">
+          <text class="amount-label">应付总额</text>
+          <text class="price">¥{{item.totalAmount}}</text>
+        </view>
+        <view class="amount">
+          <text class="amount-label">已付</text>
+          <text class="paid">¥{{item.paidAmount}}</text>
+        </view>
+        <view class="amount">
+          <text class="amount-label">待付</text>
+          <text class="bronze">¥{{item.tailAmount}}</text>
+        </view>
+      </view>
+
+      <view class="progress"><view class="inner" style="width: {{item.rate}}%"></view></view>
+      <text class="muted rate-text">支付进度 {{item.rate}}%</text>
+
+      <view class="order-actions">
+        <text class="muted more">查看详情 ›</text>
+        <view
+          wx:if="{{item.status === '待支付'}}"
+          class="btn sm"
+          data-id="{{item.id}}"
+          catchtap="pay"
+        >支付定金</view>
+      </view>
+    </view>
+
+    <view wx:if="{{!loading && !list.length}}" class="empty">
+      <text class="strong">暂无{{tab === '全部' ? '' : tab}}订单</text>
+      <text>选定房型与套餐后可在线锁定档期</text>
+      <view class="btn ghost empty-btn" bindtap="toRooms">去看看房型</view>
+    </view>
+  </block>
+</view>
+
+<view wx:if="{{showDetail}}" class="mask" bindtap="closeDetail">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-head between">
+      <text class="title">订单详情</text>
+      <text class="muted" bindtap="closeDetail">关闭</text>
+    </view>
+
+    <scroll-view scroll-y class="sheet-body">
+      <view class="between">
+        <text class="mono">{{detail.order.orderNo}}</text>
+        <text class="status">{{detail.order.status}}</text>
+      </view>
+      <view class="kv"><text class="muted">入住人</text><text>{{detail.order.customerName}}</text></view>
+      <view class="kv"><text class="muted">联系电话</text><text>{{detail.order.phone}}</text></view>
+      <view class="kv"><text class="muted">入离馆</text><text>{{detail.order.checkinDate}} ~ {{detail.order.checkoutDate}}</text></view>
+      <view class="kv"><text class="muted">护理模式</text><text>{{detail.order.careMode}}</text></view>
+      <view class="kv"><text class="muted">陪护人数</text><text>{{detail.order.companionCount}} 人</text></view>
+
+      <view class="divider"></view>
+      <text class="block-title">金额构成</text>
+      <view class="kv"><text class="muted">套餐金额</text><text>¥{{detail.order.packageAmount}}</text></view>
+      <view class="kv"><text class="muted">增值与商品</text><text>¥{{detail.order.extraAmount}} / ¥{{detail.order.productAmount}}</text></view>
+      <view class="kv"><text class="muted">优惠减免</text><text>-¥{{detail.order.discountAmount}}</text></view>
+      <view class="kv"><text class="muted">押金</text><text>¥{{detail.order.bondAmount}}</text></view>
+      <view class="kv strong"><text>应付总额</text><text class="price">¥{{detail.order.totalAmount}}</text></view>
+      <view class="kv"><text class="muted">已付 / 待付</text><text>¥{{detail.order.paidAmount}} / ¥{{detail.order.tailAmount}}</text></view>
+
+      <block wx:if="{{detail.items && detail.items.length}}">
+        <view class="divider"></view>
+        <text class="block-title">费用明细</text>
+        <view wx:for="{{detail.items}}" wx:key="id" class="kv">
+          <text class="muted">{{item.itemName}} ×{{item.quantity}}</text>
+          <text>¥{{item.amount}}</text>
+        </view>
+      </block>
+
+      <block wx:if="{{detail.payments && detail.payments.length}}">
+        <view class="divider"></view>
+        <text class="block-title">收款记录</text>
+        <view wx:for="{{detail.payments}}" wx:key="id" class="kv">
+          <view class="col">
+            <text>{{item.payType}} · {{item.method}}</text>
+            <text class="muted">{{item.paymentNo}} · {{item.status}}</text>
+          </view>
+          <text class="paid">¥{{item.amount}}</text>
+        </view>
+      </block>
+
+      <block wx:if="{{detail.refunds && detail.refunds.length}}">
+        <view class="divider"></view>
+        <text class="block-title">退款记录</text>
+        <view wx:for="{{detail.refunds}}" wx:key="id" class="kv">
+          <view class="col">
+            <text>{{item.refundNo}}</text>
+            <text class="muted">{{item.reason}} · {{item.status}}</text>
+          </view>
+          <text class="bronze">¥{{item.amount}}</text>
+        </view>
+      </block>
+
+      <block wx:if="{{detail.changes && detail.changes.length}}">
+        <view class="divider"></view>
+        <text class="block-title">变更留痕</text>
+        <view wx:for="{{detail.changes}}" wx:key="id" class="kv">
+          <view class="col">
+            <text>{{item.changeType}}</text>
+            <text class="muted">{{item.reason}}</text>
+          </view>
+          <text class="{{item.amountDiff >= 0 ? 'bronze' : 'paid'}}">¥{{item.amountDiff}}</text>
+        </view>
+      </block>
+
+      <block wx:if="{{detail.contracts && detail.contracts.length}}">
+        <view class="divider"></view>
+        <text class="block-title">合同附件</text>
+        <view
+          wx:for="{{detail.contracts}}"
+          wx:key="id"
+          class="kv link-row"
+          data-url="{{item.fileKey}}"
+          bindtap="previewContract"
+        >
+          <text>{{item.fileName}}</text>
+          <text class="copy">查看 ›</text>
+        </view>
+      </block>
+
+      <view class="detail-actions">
+        <view
+          wx:if="{{detail.order.status === '待支付'}}"
+          class="btn"
+          data-id="{{detail.order.id}}"
+          bindtap="pay"
+        >支付定金</view>
+        <view
+          wx:if="{{detail.order.status === '待入住' || detail.order.status === '在住' || detail.order.status === '待结算'}}"
+          class="btn ghost"
+          data-no="{{detail.order.orderNo}}"
+          bindtap="applyRefund"
+        >申请退订</view>
+        <view
+          wx:if="{{detail.order.status === '待入住' || detail.order.status === '在住'}}"
+          class="btn ghost"
+          bindtap="applyChange"
+        >申请变更</view>
+        <view class="btn ghost" bindtap="callStaff">联系门店顾问</view>
+      </view>
+    </scroll-view>
+  </view>
+</view>

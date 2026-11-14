@@ -1,0 +1,102 @@
+<view class="wrap">
+  <view class="between head">
+    <text class="title">交接班</text>
+    <view class="btn sm" bindtap="openForm">新建交接单</view>
+  </view>
+
+  <view wx:if="{{list.length}}">
+    <view wx:for="{{list}}" wx:key="id" class="card item">
+      <view class="between">
+        <view class="row gap12">
+          <text class="shift">{{item.shiftDate}} · {{item.shiftType}}</text>
+          <text class="tag {{item.status === '已确认' ? '' : 'warn'}}">{{item.status}}</text>
+        </view>
+        <text class="muted">{{item.fromSign || item.fromNurseId}}</text>
+      </view>
+
+      <view class="block">
+        <text class="block-label">重点观察</text>
+        <text class="block-text">{{item.watchPoints}}</text>
+      </view>
+      <view wx:if="{{item.unfinished}}" class="block">
+        <text class="block-label">未完成事项</text>
+        <text class="block-text">{{item.unfinished}}</text>
+      </view>
+      <view wx:if="{{item.abnormalNotes}}" class="block">
+        <text class="block-label warn-text">异常备注</text>
+        <text class="block-text">{{item.abnormalNotes}}</text>
+      </view>
+
+      <view class="foot">
+        <text class="muted">{{item.status === '已确认' ? '接班时间 ' + item.confirmedTime : '等待接班确认'}}</text>
+        <view
+          wx:if="{{item.status !== '已确认'}}"
+          class="btn sm"
+          data-id="{{item.id}}"
+          bindtap="confirm"
+        >接班确认</view>
+      </view>
+    </view>
+  </view>
+  <view wx:else class="empty">
+    <text class="strong">今日暂无交接单</text>
+    <text>交接班时请完整填写重点观察与未完成事项</text>
+  </view>
+</view>
+
+<view wx:if="{{showForm}}" class="mask" bindtap="closeForm">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-head between">
+      <text class="title">新建交接单</text>
+      <text class="muted" bindtap="closeForm">关闭</text>
+    </view>
+
+    <view class="field">
+      <text class="label">班次</text>
+      <view class="chips">
+        <text
+          wx:for="{{shiftTypes}}"
+          wx:key="*this"
+          class="chip {{form.shiftType === item ? 'on' : ''}}"
+          data-value="{{item}}"
+          bindtap="pickShift"
+        >{{item}}</text>
+      </view>
+    </view>
+
+    <view class="field">
+      <text class="label">重点观察事项（必填）</text>
+      <textarea
+        value="{{form.watchPoints}}"
+        data-field="watchPoints"
+        bindinput="input"
+        maxlength="400"
+        placeholder="如：3 床宝宝黄疸 12.4，需每 4 小时复测；5 床妈妈伤口换药"
+      />
+    </view>
+
+    <view class="field">
+      <text class="label">未完成事项</text>
+      <textarea
+        value="{{form.unfinished}}"
+        data-field="unfinished"
+        bindinput="input"
+        maxlength="300"
+        placeholder="如：下午抚触未做，交接夜班完成"
+      />
+    </view>
+
+    <view class="field">
+      <text class="label">异常备注</text>
+      <textarea
+        value="{{form.abnormalNotes}}"
+        data-field="abnormalNotes"
+        bindinput="input"
+        maxlength="300"
+        placeholder="选填：家属诉求、特殊情况"
+      />
+    </view>
+
+    <view class="btn" bindtap="submit">提交交接单</view>
+  </view>
+</view>

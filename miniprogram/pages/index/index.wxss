@@ -1,0 +1,38 @@
+.page { padding-bottom: 40rpx; }
+.hero { padding: 36rpx 28rpx 40rpx; background: linear-gradient(150deg, #1e5344, #2f7d64 62%, #4fae8d); border-radius: 0 0 36rpx 36rpx; }
+.hero .title { font-size: 42rpx; color: #fff; }
+.lang {
+  width: 64rpx; height: 64rpx; line-height: 64rpx; text-align: center;
+  border-radius: 50%; background: rgba(255,255,255,0.16); color: #eaf5ef; font-size: 24rpx;
+}
+.hero-actions { display: flex; gap: 18rpx; margin-top: 32rpx; }
+.hero-btn {
+  flex: 1; height: 80rpx; line-height: 80rpx; text-align: center; border-radius: 999rpx;
+  background: #ffffff; color: #1c5343; font-size: 28rpx; font-weight: 500;
+}
+.hero-btn.ghost { background: rgba(255,255,255,0.14); color: #eef6f1; border: 1rpx solid rgba(255,255,255,0.34); }
+
+.quick { display: flex; justify-content: space-between; margin-top: -36rpx; background: #fff; border-radius: 24rpx; padding: 26rpx 12rpx; box-shadow: 0 6rpx 20rpx rgba(31,36,33,0.06); }
+.quick-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10rpx; }
+.q-icon {
+  width: 72rpx; height: 72rpx; line-height: 72rpx; text-align: center; border-radius: 22rpx;
+  background: #f0f8f4; color: #246a54; font-size: 28rpx;
+}
+.q-text { font-size: 24rpx; color: #414a45; }
+
+.banner { margin-top: 24rpx; }
+.swiper { height: 320rpx; border-radius: 24rpx; overflow: hidden; }
+.banner-img { width: 100%; height: 100%; }
+.banner-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #eef5f0, #f6f1e7); }
+.banner-title { font-size: 32rpx; color: #246a54; font-weight: 600; }
+
+.pkg .pkg-name { font-size: 32rpx; font-weight: 600; color: #1f2421; }
+.pkg-price { margin-top: 14rpx; }
+.pkg-price .price { font-size: 40rpx; }
+.pkg-desc { display: block; margin-top: 10rpx; }
+
+.room .room-name { display: block; margin-top: 14rpx; font-size: 28rpx; color: #1f2421; font-weight: 500; }
+.thumb { height: 220rpx; }
+
+.news { display: flex; flex-direction: column; gap: 6rpx; }
+.news-title { font-size: 28rpx; color: #1f2421; }

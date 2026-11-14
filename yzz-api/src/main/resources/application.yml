@@ -1,0 +1,95 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: yzz-api
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  tomcat:
+    max-http-form-post-size: 25MB
+
+spring:
+  application:
+    name: yzz-api
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/${MYSQL_DB:yzz_platform}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 10
+      connection-timeout: 30000
+      pool-name: yzz-hikari
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 3s
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 25MB
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+    default-property-inclusion: always
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    # 生产环境请调整为 org.apache.ibatis.logging.nologging.NoLoggingImpl
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  type-aliases-package: com.yzz
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+
+yzz:
+  security:
+    # 生产环境务必通过环境变量覆盖，长度不少于 32 位
+    token-secret: ${YZZ_TOKEN_SECRET:yzz-dev-token-secret-change-me-in-production}
+    secret-key: ${YZZ_SECRET_KEY:yzz-dev-aes-key-change-me-in-production}
+    token-ttl-minutes: 720
+  cache:
+    # memory：单机调试；redis：多实例部署必须切换
+    provider: ${YZZ_CACHE_PROVIDER:memory}
+  storage:
+    driver: ${YZZ_STORAGE_DRIVER:local}
+    local-root: ${YZZ_STORAGE_ROOT:./data/storage}
+    public-base-url: /files
+    max-size-mb: 20
+  sensitive:
+    extra-words: ""
+
+logging:
+  level:
+    root: info
+    com.yzz: info
+  file:
+    name: ./logs/yzz-api.log

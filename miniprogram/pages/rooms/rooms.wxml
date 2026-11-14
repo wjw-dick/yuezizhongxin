@@ -1,0 +1,77 @@
+<view class="wrap">
+  <view class="chips">
+    <text
+      wx:for="{{levels}}"
+      wx:key="*this"
+      class="chip {{level === item ? 'on' : ''}}"
+      data-level="{{item}}"
+      bindtap="pickLevel"
+    >{{item || '全部房型'}}</text>
+  </view>
+
+  <view wx:for="{{rooms}}" wx:key="id" wx:if="{{!level || item.level === level}}" class="card room" data-id="{{item.id}}" bindtap="openDetail">
+    <image wx:if="{{item.images && item.images.length}}" src="{{item.images[0]}}" mode="aspectFill" class="thumb" />
+    <view wx:else class="thumb thumb-ph">房型图待上传</view>
+    <view class="room-head">
+      <text class="room-name">{{item.name}}</text>
+      <text class="tag">{{item.level}}</text>
+    </view>
+    <text class="muted">{{item.area}}㎡ · {{item.bedType}} · 可住{{item.maxGuest}}人</text>
+    <text class="muted room-fac">{{item.facilities}}</text>
+    <view class="row between room-foot">
+      <text class="bronze">查看详情与图集</text>
+      <text class="muted">›</text>
+    </view>
+  </view>
+
+  <view wx:if="{{!loading && !rooms.length}}" class="empty">
+    <text class="strong">暂无可售房型</text>
+    <text>请联系门店顾问了解档期</text>
+  </view>
+
+  <view class="section-title">套餐对比</view>
+  <view wx:for="{{packages}}" wx:key="id" class="card pkg" data-id="{{item.id}}" bindtap="toCreate">
+    <view class="between">
+      <text class="pkg-name">{{item.name}}</text>
+      <text class="price">¥{{item.price}}</text>
+    </view>
+    <view class="pkg-meta">
+      <text class="tag muted">{{item.days}} 天</text>
+      <text class="tag muted">{{item.roomTypeLevel}}</text>
+      <text class="tag muted">{{item.careMode}}</text>
+      <text class="tag bronze">定金 {{item.depositRatio * 100}}%</text>
+    </view>
+    <text class="muted pkg-rehab">含：{{item.rehabItems || '基础康复评估'}}</text>
+    <view class="btn sm" data-id="{{item.id}}" catchtap="toCreate">立即预订</view>
+  </view>
+</view>
+
+<view wx:if="{{active}}" class="mask" bindtap="closeDetail">
+  <view class="sheet" catchtap="closeDetail">
+    <view class="sheet-head between">
+      <text class="title">{{active.name}}</text>
+      <text class="muted" bindtap="closeDetail">关闭</text>
+    </view>
+    <scroll-view scroll-x class="gallery">
+      <image
+        wx:for="{{active.images}}"
+        wx:key="*this"
+        src="{{item}}"
+        mode="aspectFill"
+        class="gallery-img"
+        data-src="{{item}}"
+        bindtap="preview"
+      />
+    </scroll-view>
+    <view class="sheet-body">
+      <view class="row gap12">
+        <text class="tag">{{active.level}}</text>
+        <text class="tag muted">{{active.area}}㎡</text>
+        <text class="tag muted">{{active.bedType}}</text>
+      </view>
+      <text class="muted sheet-fac">{{active.facilities}}</text>
+      <rich-text nodes="{{active.description}}" class="sheet-desc"></rich-text>
+    </view>
+    <view class="btn" data-name="{{active.name}}" bindtap="toBook">预约参观该房型</view>
+  </view>
+</view>

@@ -1,0 +1,116 @@
+# 月子中心数字化多端运营平台 —— 本地开发环境
+# 用法：docker compose -f deploy/docker-compose.dev.yml up -d
+# 说明：仅用于开发与联调；生产部署见 deploy/docker-compose.prod.yml（T103 交付）
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: yzz-mysql
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+08:00
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: yzz_platform
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # 首次启动自动执行建表与初始化数据，顺序按文件名
+      - ../sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-uroot", "-proot", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  redis:
+    image: redis:7-alpine
+    container_name: yzz-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: yzz-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: yzz
+      RABBITMQ_DEFAULT_PASS: yzz123456
+      RABBITMQ_DEFAULT_VHOST: /yuezizhongxin
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+
+  minio:
+    image: minio/minio:latest
+    container_name: yzz-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: yzzminio
+      MINIO_ROOT_PASSWORD: yzzminio123456
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+
+  # 可选：容器化运行后端（默认不启动，本地开发建议用 IDEA 直接跑）
+  app:
+    profiles: ["app"]
+    image: eclipse-temurin:17-jre
+    container_name: yzz-app
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DB: yzz_platform
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      REDIS_HOST: redis
+      YZZ_CACHE_PROVIDER: redis
+      YZZ_STORAGE_DRIVER: local
+      TZ: Asia/Shanghai
+    volumes:
+      - ../yzz-api/target/yzz-api.jar:/app/yzz-api.jar:ro
+      - app-storage:/app/data/storage
+    command: ["java", "-jar", "/app/yzz-api.jar"]
+    ports:
+      - "8080:8080"
+
+volumes:
+  mysql-data:
+  redis-data:
+  rabbitmq-data:
+  minio-data:
+  app-storage:

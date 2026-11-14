@@ -1,0 +1,67 @@
+.result {
+  padding-top: 60rpx;
+  text-align: center;
+}
+
+.badge {
+  width: 140rpx;
+  height: 140rpx;
+  margin: 0 auto 28rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef7f2;
+}
+.badge.paid { background: #e9f5ef; }
+.badge.pending { background: #fdf5e8; }
+.badge.cancel { background: #f4f1ec; }
+
+.badge-icon {
+  font-size: 64rpx;
+  color: #246a54;
+  line-height: 1;
+}
+.badge.pending .badge-icon { color: #a87f3a; }
+.badge.cancel .badge-icon { color: #8d968f; }
+
+.desc {
+  display: block;
+  margin: 16rpx 24rpx 0;
+  line-height: 1.7;
+}
+
+.card {
+  margin-top: 40rpx;
+  text-align: left;
+}
+
+.order-no { font-size: 26rpx; color: #1f2421; }
+.copy { color: #246a54; font-size: 24rpx; }
+
+.tip {
+  margin: 24rpx 8rpx 0;
+  padding: 20rpx 24rpx;
+  background: #f7f5ef;
+  border-radius: 18rpx;
+  color: #6b746f;
+  font-size: 24rpx;
+  text-align: left;
+  line-height: 1.7;
+}
+
+.actions {
+  margin-top: 48rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  align-items: center;
+}
+.actions .btn { width: 100%; }
+
+.link {
+  margin-top: 12rpx;
+  font-size: 25rpx;
+  color: #8d968f;
+  text-decoration: underline;
+}

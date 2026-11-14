@@ -1,0 +1,77 @@
+<view class="wrap pb-bar" wx:if="{{item}}">
+  <view class="card head">
+    <view class="between">
+      <text class="title">{{item.itemName}}</text>
+      <text class="tag {{item.status === '已完成' ? '' : 'warn'}}">{{item.status}}</text>
+    </view>
+    <view class="meta">
+      <text class="muted">{{customerName || '未关联客户'}} · {{item.targetType}} · {{item.timeSlot}}</text>
+      <text class="muted care-mode">{{careMode}}</text>
+    </view>
+  </view>
+
+  <view class="section-title">体征与记录</view>
+  <view class="card">
+    <view class="grid2">
+      <view class="field">
+        <text class="label">体温（℃）</text>
+        <input type="digit" value="{{form.temperature}}" data-field="temperature" bindinput="input" placeholder="36.5" />
+      </view>
+      <view class="field">
+        <text class="label">体重（kg）</text>
+        <input type="digit" value="{{form.weight}}" data-field="weight" bindinput="input" placeholder="选填" />
+      </view>
+      <view class="field">
+        <text class="label">血压（mmHg）</text>
+        <input value="{{form.bloodPressure}}" data-field="bloodPressure" bindinput="input" placeholder="118/76" />
+      </view>
+      <view class="field">
+        <text class="label">脉搏（次/分）</text>
+        <input type="number" value="{{form.pulse}}" data-field="pulse" bindinput="input" placeholder="选填" />
+      </view>
+      <view class="field">
+        <text class="label">喂养量（ml）</text>
+        <input type="digit" value="{{form.feedingAmount}}" data-field="feedingAmount" bindinput="input" placeholder="新生儿必填" />
+      </view>
+      <view class="field">
+        <text class="label">黄疸测值</text>
+        <input type="digit" value="{{form.jaundiceValue}}" data-field="jaundiceValue" bindinput="input" placeholder="选填" />
+      </view>
+      <view class="field">
+        <text class="label">大小便次数</text>
+        <input type="number" value="{{form.stoolCount}}" data-field="stoolCount" bindinput="input" placeholder="选填" />
+      </view>
+    </view>
+
+    <view class="field">
+      <text class="label">护理记录内容</text>
+      <textarea
+        value="{{form.content}}"
+        data-field="content"
+        bindinput="input"
+        maxlength="500"
+        placeholder="如：温水擦浴，皮肤完好；母乳喂养 15 分钟，吸吮有力"
+      />
+    </view>
+    <text class="muted tip">记录时间取服务端时间；超过 24 小时补录需填写原因并进入审批</text>
+  </view>
+
+  <view wx:if="{{recent.length}}" class="section-title">该客户最近记录</view>
+  <view wx:if="{{recent.length}}" class="card">
+    <view wx:for="{{recent}}" wx:key="id" class="recent">
+      <view class="between">
+        <text class="recent-name">{{item.itemName}}</text>
+        <text class="muted">{{item.submitTime}}</text>
+      </view>
+      <text class="muted recent-content">{{item.content}}</text>
+    </view>
+  </view>
+
+  <view class="bar">
+    <view class="btn {{saving ? 'loading' : ''}}" bindtap="submit">{{saving ? '提交中…' : '提交护理记录'}}</view>
+  </view>
+</view>
+
+<view wx:else class="empty">
+  <text class="strong">加载中…</text>
+</view>

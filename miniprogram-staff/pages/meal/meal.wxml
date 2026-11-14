@@ -1,0 +1,38 @@
+<view class="wrap">
+  <view class="tabs">
+    <text class="tab {{tab === 'pending' ? 'on' : ''}}" data-tab="pending" bindtap="switchTab">待核对</text>
+    <text class="tab {{tab === 'done' ? 'on' : ''}}" data-tab="done" bindtap="switchTab">已核对</text>
+  </view>
+
+  <view wx:if="{{rooms.length}}">
+    <view wx:for="{{rooms}}" wx:key="roomId" class="card room">
+      <view class="between room-head">
+        <text class="room-no">{{item.roomId ? item.roomId + ' 房' : '未分配房间'}}</text>
+        <text class="tag muted">{{item.meals.length}} 份</text>
+      </view>
+      <view wx:for="{{item.meals}}" wx:for-item="meal" wx:key="id" class="meal">
+        <view class="between">
+          <view class="row gap12">
+            <text class="meal-type">{{meal.mealType}}</text>
+            <text wx:if="{{meal.specialTag}}" class="tag warn">{{meal.specialTag}}</text>
+            <text wx:if="{{meal.extraCharge > 0}}" class="tag bronze">加餐 ¥{{meal.extraCharge}}</text>
+          </view>
+          <text
+            wx:if="{{tab === 'pending'}}"
+            class="check"
+            data-id="{{meal.id}}"
+            data-dishes="{{meal.dishes}}"
+            bindtap="check"
+          >核对</text>
+          <text wx:else class="muted">已出餐</text>
+        </view>
+        <text class="dishes">{{meal.dishes}}</text>
+        <text wx:if="{{meal.abnormal}}" class="abnormal">异常：{{meal.abnormal}}</text>
+      </view>
+    </view>
+  </view>
+  <view wx:else class="empty">
+    <text class="strong">{{tab === 'pending' ? '没有待核对的出餐' : '暂无已核对记录'}}</text>
+    <text>{{tab === 'pending' ? '厨房出餐后会自动出现在这里' : '核对后可按房间追溯'}}</text>
+  </view>
+</view>

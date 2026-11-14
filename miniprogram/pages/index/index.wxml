@@ -1,0 +1,102 @@
+<view class="page">
+  <view class="hero">
+    <view class="row between">
+      <view class="col">
+        <text class="title">{{site.name || '月之孕月子中心'}}</text>
+        <text class="subtitle">{{lang === 'zh-CN' ? '一对一母婴护理 · 产后康复 · 阶段月子餐' : 'One-to-one maternal care · Postpartum rehab · Meal plans'}}</text>
+      </view>
+      <text class="lang" bindtap="switchLang">{{lang === 'zh-CN' ? 'EN' : '中'}}</text>
+    </view>
+    <view class="hero-actions">
+      <view class="hero-btn" bindtap="toBook">预约参观</view>
+      <view class="hero-btn ghost" bindtap="toRooms">房型套餐</view>
+    </view>
+  </view>
+
+  <view class="wrap">
+    <view class="quick">
+      <view class="quick-item" bindtap="toBook">
+        <text class="q-icon">约</text>
+        <text class="q-text">预约参观</text>
+      </view>
+      <view class="quick-item" bindtap="toRooms">
+        <text class="q-icon">房</text>
+        <text class="q-text">房型套餐</text>
+      </view>
+      <view class="quick-item" bindtap="toCare">
+        <text class="q-icon">护</text>
+        <text class="q-text">我的护理</text>
+      </view>
+      <view class="quick-item" bindtap="toServices">
+        <text class="q-icon">康</text>
+        <text class="q-text">康复餐食</text>
+      </view>
+    </view>
+
+    <view wx:if="{{banners.length}}" class="banner">
+      <swiper indicator-dots autoplay circular interval="4200" class="swiper">
+        <swiper-item wx:for="{{banners}}" wx:key="id">
+          <image wx:if="{{item.cover}}" src="{{item.cover}}" mode="aspectFill" class="banner-img" />
+          <view wx:else class="banner-ph">
+            <text class="banner-title">{{item.title}}</text>
+          </view>
+        </swiper-item>
+      </swiper>
+    </view>
+
+    <view class="section-title between">
+      <text>热销套餐</text>
+      <text class="muted" bindtap="toRooms">全部 ›</text>
+    </view>
+
+    <view wx:if="{{packages.length}}">
+      <view wx:for="{{packages}}" wx:key="id" class="card pkg" data-id="{{item.id}}" bindtap="toCreate">
+        <view class="between">
+          <text class="pkg-name">{{item.name}}</text>
+          <text class="tag">{{item.roomTypeLevel}}</text>
+        </view>
+        <view class="row between pkg-price">
+          <text class="price">¥{{item.price}}</text>
+          <text class="muted">/ {{item.days}} 天 · {{item.careMode}}</text>
+        </view>
+        <text class="muted pkg-desc">{{item.rehabItems || '含基础康复评估与阶段月子餐'}}</text>
+      </view>
+    </view>
+    <view wx:else class="empty">
+      <text class="strong">套餐加载中</text>
+      <text>运营后台「套餐与商品」上架后自动展示</text>
+    </view>
+
+    <view class="section-title between">
+      <text>房型速览</text>
+      <text class="muted" bindtap="toRooms">全部 ›</text>
+    </view>
+    <view class="grid2">
+      <view wx:for="{{rooms}}" wx:key="id" class="card room" bindtap="toRooms">
+        <image wx:if="{{item.images && item.images.length}}" src="{{item.images[0]}}" mode="aspectFill" class="thumb" />
+        <view wx:else class="thumb thumb-ph">房型图待上传</view>
+        <text class="room-name">{{item.name}}</text>
+        <text class="muted">{{item.area}}㎡ · 可住{{item.maxGuest}}人</text>
+      </view>
+    </view>
+
+    <view class="section-title">门店信息</view>
+    <view class="card">
+      <view class="col gap8">
+        <text class="muted">地址：{{site.address || '地址待配置'}}</text>
+        <text class="muted">电话：{{site.phone || '400-000-0000'}}</text>
+        <text class="muted">护理值班：24 小时</text>
+      </view>
+      <view class="row gap16" style="margin-top: 20rpx">
+        <view class="btn ghost sm" bindtap="callStore">电话咨询</view>
+        <view class="btn sm" bindtap="toBook">预约到店</view>
+      </view>
+    </view>
+
+    <view wx:if="{{news.length}}" class="section-title">资讯</view>
+    <view wx:for="{{news}}" wx:key="id" class="card news" data-id="{{item.id}}" bindtap="toArticle">
+      <text class="news-title">{{item.title}}</text>
+      <text class="muted">{{item.publishedTime}}</text>
+    </view>
+  </view>
+</view>

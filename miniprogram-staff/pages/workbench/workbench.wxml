@@ -1,0 +1,109 @@
+<view class="wrap">
+  <view class="hero dash">
+    <view class="between">
+      <view class="col">
+        <text class="title">你好，{{staffName}}</text>
+        <text class="subtitle">{{date}} · 今日 {{totalCount}} 项护理任务待执行</text>
+      </view>
+      <view class="ring" style="background: conic-gradient(#8ee0bf 0deg, #8ee0bf {{rate * 3.6}}deg, rgba(255,255,255,0.22) {{rate * 3.6}}deg, rgba(255,255,255,0.22) 360deg);">
+        <text class="ring-num">{{rate}}%</text>
+        <text class="ring-label">已完成</text>
+      </view>
+    </view>
+
+    <view class="clock-row">
+      <view class="clock-item">
+        <text class="clock-label">上班</text>
+        <text class="clock-value">{{attendance && attendance.checkIn ? attendance.checkIn : '未打卡'}}</text>
+      </view>
+      <view class="clock-item">
+        <text class="clock-label">下班</text>
+        <text class="clock-value">{{attendance && attendance.checkOut ? attendance.checkOut : '未打卡'}}</text>
+      </view>
+      <view
+        class="clock-btn {{clocking ? 'off' : ''}}"
+        data-type="{{attendance && attendance.checkIn ? 'out' : 'in'}}"
+        bindtap="clock"
+      >{{attendance && attendance.checkIn ? '下班打卡' : '上班打卡'}}</view>
+    </view>
+  </view>
+
+  <view class="stats">
+    <view class="stat">
+      <text class="stat-num">{{customerCount}}</text>
+      <text class="stat-label">负责客户</text>
+    </view>
+    <view class="stat" bindtap="toAbnormal">
+      <text class="stat-num warn">{{abnormals.length}}</text>
+      <text class="stat-label">待处置异常</text>
+    </view>
+    <view class="stat" bindtap="toMeal">
+      <text class="stat-num">{{pendingMeals}}</text>
+      <text class="stat-label">待核对出餐</text>
+    </view>
+    <view class="stat" bindtap="toHandover">
+      <text class="stat-num">{{handovers.length}}</text>
+      <text class="stat-label">交接单</text>
+    </view>
+  </view>
+
+  <view class="between section-head">
+    <text class="section-title">我的护理任务</text>
+    <text class="muted">{{doneCount}}/{{totalCount}}</text>
+  </view>
+
+  <view wx:if="{{items.length}}" class="task-list">
+    <view
+      wx:for="{{items}}"
+      wx:key="id"
+      class="card task {{item.done ? 'done' : ''}}"
+      data-id="{{item.id}}"
+      bindtap="toExec"
+    >
+      <view class="between">
+        <view class="row gap12">
+          <text class="slot">{{item.timeSlot}}</text>
+          <text class="task-name">{{item.itemName}}</text>
+        </view>
+        <text class="tag {{item.done ? '' : 'warn'}}">{{item.status}}</text>
+      </view>
+      <view class="task-meta">
+        <text class="muted">{{item.customerName || '未关联客户'}}</text>
+        <text class="muted">· {{item.targetType}}</text>
+        <text wx:if="{{item.roomId}}" class="muted">· 房间 {{item.roomId}}</text>
+      </view>
+      <view class="task-action">
+        <text class="muted">{{item.done ? '已完成 · 查看记录' : '点击执行并录入体征'}}</text>
+        <text class="go">›</text>
+      </view>
+    </view>
+  </view>
+  <view wx:else class="empty">
+    <text class="strong">今日暂无分配给你的护理项</text>
+    <text>如需协助其他区域，请联系护理主管</text>
+  </view>
+
+  <view wx:if="{{abnormals.length}}" class="alert-card" bindtap="toAbnormal">
+    <text class="alert-title">有 {{abnormals.length}} 条异常待处置</text>
+    <text class="alert-sub">{{abnormals[0].abnormalType}} · {{abnormals[0].urgency}} · {{abnormals[0].description}}</text>
+  </view>
+
+  <view class="quick">
+    <view class="quick-item" bindtap="toHandover">
+      <text class="q-icon">接</text>
+      <text>交接班</text>
+    </view>
+    <view class="quick-item" bindtap="toAbnormal">
+      <text class="q-icon">警</text>
+      <text>异常上报</text>
+    </view>
+    <view class="quick-item" bindtap="toMeal">
+      <text class="q-icon">餐</text>
+      <text>出餐核对</text>
+    </view>
+    <view class="quick-item" bindtap="toMessage">
+      <text class="q-icon">信</text>
+      <text>消息</text>
+    </view>
+  </view>
+</view>

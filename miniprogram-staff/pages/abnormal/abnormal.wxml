@@ -1,0 +1,92 @@
+<view class="wrap">
+  <view class="between head">
+    <view class="tabs">
+      <text class="tab {{status === '待处置' ? 'on' : ''}}" data-status="待处置" bindtap="switchStatus">待处置</text>
+      <text class="tab {{status === '已闭环' ? 'on' : ''}}" data-status="已闭环" bindtap="switchStatus">已闭环</text>
+    </view>
+    <view class="btn sm" bindtap="openForm">上报异常</view>
+  </view>
+
+  <view wx:if="{{list.length}}">
+    <view wx:for="{{list}}" wx:key="id" class="card item {{item.urgency === '紧急' ? 'urgent' : ''}}">
+      <view class="between">
+        <view class="row gap12">
+          <text class="tag {{item.urgency === '紧急' ? 'warn' : 'muted'}}">{{item.urgency}}</text>
+          <text class="type">{{item.abnormalType}}</text>
+        </view>
+        <text class="muted">{{item.createdTime}}</text>
+      </view>
+      <text class="desc">{{item.description}}</text>
+      <view wx:if="{{item.handleResult}}" class="handle">
+        <text class="handle-label">处置结果</text>
+        <text class="handle-text">{{item.handleResult}}</text>
+      </view>
+      <view class="foot">
+        <text class="muted">{{item.status}} · 家属已告知：{{item.familyNotified ? '是' : '否'}}</text>
+      </view>
+    </view>
+  </view>
+  <view wx:else class="empty">
+    <text class="strong">暂无{{status}}异常</text>
+    <text>发现异常及时上报，闭环后进入质控追溯</text>
+  </view>
+</view>
+
+<view wx:if="{{showForm}}" class="mask" bindtap="closeForm">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-head between">
+      <text class="title">上报异常</text>
+      <text class="muted" bindtap="closeForm">关闭</text>
+    </view>
+    <text class="muted tip">紧急情况请先处置并同时按床头呼叫铃</text>
+
+    <view class="field">
+      <text class="label">客户</text>
+      <picker mode="selector" range="{{customers}}" range-key="label" bindchange="pickCustomer">
+        <view class="picker-box">
+          {{customerIndex >= 0 ? customers[customerIndex].label : '请选择今日负责的客户'}}
+        </view>
+      </picker>
+      <text wx:if="{{!customers.length}}" class="muted warn-text">今日无负责客户，可先在后台分配护理计划</text>
+    </view>
+
+    <view class="field">
+      <text class="label">异常类型</text>
+      <view class="chips">
+        <text
+          wx:for="{{types}}"
+          wx:key="*this"
+          class="chip {{form.abnormalType === item ? 'on' : ''}}"
+          data-value="{{item}}"
+          bindtap="pickType"
+        >{{item}}</text>
+      </view>
+    </view>
+
+    <view class="field">
+      <text class="label">紧急程度</text>
+      <view class="chips">
+        <text
+          wx:for="{{urgencies}}"
+          wx:key="*this"
+          class="chip {{form.urgency === item ? 'on' : ''}}"
+          data-value="{{item}}"
+          bindtap="pickUrgency"
+        >{{item}}</text>
+      </view>
+    </view>
+
+    <view class="field">
+      <text class="label">情况描述</text>
+      <textarea
+        value="{{form.description}}"
+        data-field="description"
+        bindinput="input"
+        maxlength="400"
+        placeholder="发生时间、表现、已采取措施、是否需要就医"
+      />
+    </view>
+
+    <view class="btn" bindtap="submit">提交上报</view>
+  </view>
+</view>

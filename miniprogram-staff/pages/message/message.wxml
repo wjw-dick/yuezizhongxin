@@ -1,0 +1,30 @@
+<view class="wrap">
+  <view class="between head">
+    <text class="title">消息</text>
+    <text class="muted">{{list.length}} 条待处理</text>
+  </view>
+
+  <view wx:if="{{list.length}}">
+    <view
+      wx:for="{{list}}"
+      wx:key="id"
+      class="card msg"
+      data-link="{{item.link}}"
+      bindtap="open"
+    >
+      <view class="between">
+        <view class="row gap12">
+          <text class="type-tag {{item.tone}}">{{item.type}}</text>
+          <text class="msg-title">{{item.title}}</text>
+        </view>
+        <text class="muted">{{item.time}}</text>
+      </view>
+      <text class="msg-desc">{{item.desc}}</text>
+      <view class="msg-foot"><text class="muted">点击进入处理 ›</text></view>
+    </view>
+  </view>
+  <view wx:else class="empty">
+    <text class="strong">暂无待处理消息</text>
+    <text>异常上报、交接确认与出餐核对会汇总到这里</text>
+  </view>
+</view>
